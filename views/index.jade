@@ -1,0 +1,8 @@
+extends layout
+
+block content
+    if username === null
+        p ¡Bienvenido! ¿Querés <a href="/login">autenticarte</a>?
+    else
+        p ¡Bienvenido, #{username}! ¿Querés <a href="/logout">salir</a>?
+
