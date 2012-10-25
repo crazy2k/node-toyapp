@@ -1,3 +1,5 @@
+'use strict';
+
 var express = require('express');
 var jade = require('jade');
 
@@ -24,11 +26,12 @@ function temp_findUserById(id, fn) {
 }
 
 function temp_findUserByUsername(username, fn) {
-    var i;
-    for (i = 0; i < temp_users.length; i++) {
-        var user = temp_users[i];
-        if (user.username == username)
+    var i, user;
+    for (i = 0; i < temp_users.length; i += 1) {
+        user = temp_users[i];
+        if (user.username === username) {
             return fn(null, user);
+        }
     }
     fn(new Error('User was not found by username'));
 }
@@ -38,7 +41,7 @@ function temp_findUserByUsername(username, fn) {
  * Settings
  */
 
-app.configure(function(){
+app.configure(function () {
     app.set('views', __dirname + '/views');
     app.set('view engine', 'jade');
 
@@ -51,27 +54,28 @@ app.configure(function(){
     app.use('/static', express.static(__dirname + '/static'));
 
     passport.use(new LocalStrategy(
-        function(username, password, done) {
-            temp_findUserByUsername(username, function(err, user) {
-                if (err)
+        function (username, password, done) {
+            temp_findUserByUsername(username, function (err, user) {
+                if (err) {
                     return done(new Error('Username not found'));
-                if (user.password !== password)
+                }
+                if (user.password !== password) {
                     return done(null, false);
+                }
                 done(null, user);
             });
         }
     ));
 
-    passport.serializeUser(function(user, done) {
+    passport.serializeUser(function (user, done) {
         done(null, user.id);
     });
 
-    passport.deserializeUser(function(id, done) {
+    passport.deserializeUser(function (id, done) {
         temp_findUserById(id, function (err, user) {
             if (err) {
                 done(err);
-            }
-            else {
+            } else {
                 done(null, user);
             }
         });
@@ -84,27 +88,26 @@ app.configure(function(){
  * Routes
  */
 
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
     //var user = req.user;
     var username = (req.user !== undefined) ? req.user.username : null;
     res.render('index', { title: 'Welcome!', username: username });
 });
 
-app.get('/login', function(req, res) {
-    if (req.user)
+app.get('/login', function (req, res) {
+    if (req.user) {
         return res.redirect('/');
+    }
 
     res.render('login', { title: 'Log in' });
 });
 
-app.post('/login',
-    passport.authenticate('local', {
-        successRedirect: '/',
-        failureRedirect: '/login'
-    })
-);
+app.post('/login', passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/login'
+}));
 
-app.get('/logout', function(req, res) {
+app.get('/logout', function (req, res) {
     req.logOut();
     res.redirect('/');
 });
